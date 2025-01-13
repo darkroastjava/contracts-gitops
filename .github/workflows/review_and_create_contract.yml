@@ -1,0 +1,82 @@
+name: Review and Create Contract
+
+on:
+  pull_request:
+    paths:
+      - 'contracts/to_be_created/*.yaml'
+
+jobs:
+  review-and-generate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Find contract files
+      id: find_files
+      run: |
+        files=$(find contracts/to_be_created -type f -name "*.yaml")
+        echo "::set-output name=files::$files"
+
+    - name: Validate and Add Reviewers
+      run: |
+        for file in ${{ steps.find_files.outputs.files }}; do
+          echo "Processing file: $file"
+          python -c "
+          import yaml
+          with open('$file', 'r') as f:
+              data = yaml.safe_load(f)
+              assert 'template' in data and 'supplier_name' in data, 'Validation failed'
+          "
+          amount=$(grep 'amount' $file | awk '{print $2}')
+          gh pr review-request --add team:procurement
+          if [ \"$amount\" -gt 100000 ]; then
+            gh pr review-request --add team:additional-reviewers
+          fi
+        done
+
+  generate-pdfs:
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Find contract files
+      id: find_files
+      run: |
+        files=$(find contracts/to_be_created -type f -name "*.yaml")
+        echo "::set-output name=files::$files"
+
+    - name: Generate PDFs
+      run: |
+        for file in ${{ steps.find_files.outputs.files }}; do
+          echo "Generating PDF for $file"
+          template=$(grep 'template' $file | awk '{print $2}')
+          output_file=$(basename $file .yaml).pdf
+          python scripts/generate_pdf.py templates/$template $file contracts/to_be_signed/$output_file
+        done
+
+    - name: Commit generated contracts
+      run: |
+        git add contracts/to_be_signed/*.pdf
+        git commit -m "Add generated contract PDFs"
+        git push

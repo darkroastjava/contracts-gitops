@@ -1,0 +1,25 @@
+name: Handle Signed Contract
+
+on:
+  repository_dispatch:
+    types: [signed_contract_received]
+
+jobs:
+  process-signed-contract:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Download signed PDF
+      run: |
+        SIGNED_PDF_URL=${{ github.event.client_payload.signed_pdf_url }}
+        CONTRACT_ID=${{ github.event.client_payload.contract_id }}
+        curl -o contracts/signed/${CONTRACT_ID}.pdf $SIGNED_PDF_URL
+
+    - name: Commit signed contract
+      run: |
+        git add contracts/signed/${CONTRACT_ID}.pdf
+        git commit -m "Add signed contract ${CONTRACT_ID}"
+        git push
