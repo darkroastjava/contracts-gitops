@@ -1,0 +1,7 @@
+# copy this file to contracts/to_be_created and create a pull request for the change to main to test the github actions.
+template: liefervertrag.md
+supplier_name: Supplier A
+supplier_address: Musterstraße 123, 12345 Musterstadt
+contract_duration: 12 Monate
+contract_date: 2025-01-13
+amount: 200000  # Betrag für die Schwellenprüfung
