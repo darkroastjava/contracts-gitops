@@ -1,8 +1,9 @@
 import sys
 import yaml
 from jinja2 import Template
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from markdown import markdown
+from xhtml2pdf import pisa
+
 
 def generate_pdf(template_path, data_path, output_path):
     # Load template
@@ -14,18 +15,21 @@ def generate_pdf(template_path, data_path, output_path):
     with open(data_path, 'r') as f:
         data = yaml.safe_load(f)
 
-    # Render contract text
+    # Render contract text with Jinja2
     rendered_text = template.render(data)
 
-    # Create PDF
-    c = canvas.Canvas(output_path, pagesize=letter)
-    c.drawString(100, 750, "Vertrag")
-    text = c.beginText(100, 730)
-    text.setFont("Helvetica", 10)
-    for line in rendered_text.splitlines():
-        text.textLine(line)
-    c.drawText(text)
-    c.save()
+    # Convert rendered Markdown to HTML
+    rendered_html = markdown(rendered_text)
+
+    # Write the HTML to PDF
+    with open(output_path, "wb") as pdf_file:
+        pisa_status = pisa.CreatePDF(rendered_html, dest=pdf_file)
+    
+    if pisa_status.err:
+        print("Error during PDF generation")
+    else:
+        print(f"PDF successfully generated: {output_path}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:

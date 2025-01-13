@@ -55,6 +55,6 @@ amount: 200000  # Betrag für die Schwellenprüfung
         # assert
         with open(self.outputFile.name, "rb") as f:
             file_content = f.read()
-        self.assertIn(b'GarW5bAP0N&4Q>@`CS\/W)', file_content)
-        self.assertIn(b',P^MUWZ&Fp6]0FiDAYM<gHEj@>@-qMle6)aK_e4EGq!c%/aP?,', file_content)
-        self.assertIn(b'(4WAceQ13Ud)<"2#OR+;XGj#.2_&-t`tR#m8Sln/YeR;Eo^,"HhRDb7<kq=f5CJ`<6]-=;Yl$IJ61AZaiA_', file_content)
+        self.assertIn(b'/Title (Liefervertrag)', file_content)
+        self.assertIn(b'/Title (Vertragsdetails:)', file_content)
+        self.assertIn(b'''Gb!<L9lldX&;KZQ'mk$a[DM22M;FCeF)j>%1"2=>,RCF$i"SRBP@*2NCtI]6LSd3kUHo0fKV!''', file_content)
